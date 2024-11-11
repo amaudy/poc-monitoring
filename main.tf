@@ -54,9 +54,9 @@ module "nginx_service" {
 
   # Optional configurations
   container_port = 80
-  cpu           = 256
-  memory        = 512
-  desired_count = 2
+  cpu            = 256
+  memory         = 512
+  desired_count  = 2
 
   datadog_api_key = var.datadog_api_key
   datadog_region  = var.datadog_region

@@ -45,6 +45,18 @@ resource "aws_ecs_task_definition" "nginx" {
         {
           name  = "ECS_FARGATE"
           value = "true"
+        },
+        {
+          name  = "DD_PROCESS_AGENT_ENABLED"
+          value = "true"
+        },
+        {
+          name  = "DD_SYSTEM_PROBE_ENABLED"
+          value = "true"
+        },
+        {
+          name  = "DD_PROCESS_CONFIG_LOG_FILE"
+          value = "/dev/stdout"
         }
       ]
 

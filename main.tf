@@ -10,16 +10,34 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+  default_tags {
+    tags = {
+      Environment = var.environment
+      Project     = var.project_name
+      Terraform   = "true"
+      ManagedBy   = "Terraform"
+    }
+  }
+}
+
+locals {
+  resource_tags = merge(
+    var.default_tags,
+    {
+      Environment = var.environment
+      Project     = var.project_name
+      Terraform   = "true"
+      Name        = "${var.project_name}-${var.environment}"
+    }
+  )
 }
 
 module "ecs" {
   source = "./modules/ecs"
 
-  cluster_name             = var.cluster_name
+  cluster_name              = "${var.project_name}-${var.environment}"
   enable_container_insights = true
-  
-  tags = {
-    Environment = var.environment
-    Terraform   = "true"
-  }
+  project_name              = var.project_name
+
+  tags = local.resource_tags
 } 

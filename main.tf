@@ -61,6 +61,8 @@ module "nginx_service" {
   datadog_api_key = var.datadog_api_key
   datadog_region  = var.datadog_region
 
+  service_version = "v1"
+
   tags = local.resource_tags
 }
 

@@ -68,7 +68,7 @@ resource "aws_ecs_task_definition" "nginx" {
         },
         {
           name  = "DD_TAGS"
-          value = "env:${var.environment},service:nginx,project:${var.project_name}"
+          value = "env:${var.environment},service:nginx,project:${var.project_name},version:${var.service_version}"
         },
         {
           name  = "DD_DOCKER_LABELS_AS_TAGS"
@@ -102,8 +102,9 @@ resource "aws_ecs_task_definition" "nginx" {
       essential = true
 
       dockerLabels = {
-        "com.datadoghq.ad.logs" = "[{\"source\": \"nginx\", \"service\": \"nginx\"}]"
+        "com.datadoghq.ad.logs" = "[{\"source\": \"nginx\", \"service\": \"nginx\", \"version\": \"${var.service_version}\"}]"
         "service"               = "nginx"
+        "version"              = var.service_version
       }
 
       portMappings = [
@@ -131,7 +132,9 @@ resource "aws_ecs_task_definition" "nginx" {
     }
   ])
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Version = var.service_version
+  })
 }
 
 # ECS Service
@@ -154,7 +157,9 @@ resource "aws_ecs_service" "nginx" {
     container_port   = var.container_port
   }
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Version = var.service_version
+  })
 
   depends_on = [aws_lb_listener.http]
 }
@@ -167,7 +172,9 @@ resource "aws_lb" "nginx" {
   security_groups    = [aws_security_group.alb.id]
   subnets           = var.public_subnets
 
-  tags = var.tags
+  tags = merge(var.tags, {
+    Version = var.service_version
+  })
 }
 
 resource "aws_lb_target_group" "nginx" {

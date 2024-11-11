@@ -68,4 +68,10 @@ variable "datadog_region" {
   description = "Datadog site to send data to (datadoghq.com, datadoghq.eu, etc.)"
   type        = string
   default     = "datadoghq.com"
+}
+
+variable "service_version" {
+  description = "Version tag for the service"
+  type        = string
+  default     = "v1"
 } 

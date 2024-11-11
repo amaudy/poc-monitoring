@@ -57,6 +57,26 @@ resource "aws_ecs_task_definition" "nginx" {
         {
           name  = "DD_PROCESS_CONFIG_LOG_FILE"
           value = "/dev/stdout"
+        },
+        {
+          name  = "DD_LOGS_CONFIG_PROCESSING_RULES"
+          value = "[{\"type\":\"multi_line\", \"name\":\"log_start_with_date\", \"pattern\":\"\\\\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])\"}]"
+        },
+        {
+          name  = "DD_CONTAINER_EXCLUDE_LOGS"
+          value = "name:datadog-agent"
+        },
+        {
+          name  = "DD_TAGS"
+          value = "env:${var.environment},service:nginx,project:${var.project_name}"
+        },
+        {
+          name  = "DD_DOCKER_LABELS_AS_TAGS"
+          value = "{\"com.docker.compose.service\":\"service_name\"}"
+        },
+        {
+          name  = "DD_CONTAINER_LABELS_AS_TAGS"
+          value = "{\"service\":\"service_name\"}"
         }
       ]
 
@@ -80,6 +100,11 @@ resource "aws_ecs_task_definition" "nginx" {
       name      = "nginx"
       image     = "nginx:latest"
       essential = true
+
+      dockerLabels = {
+        "com.datadoghq.ad.logs" = "[{\"source\": \"nginx\", \"service\": \"nginx\"}]"
+        "service"               = "nginx"
+      }
 
       portMappings = [
         {

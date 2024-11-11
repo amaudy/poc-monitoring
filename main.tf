@@ -58,6 +58,9 @@ module "nginx_service" {
   memory        = 512
   desired_count = 2
 
+  datadog_api_key = var.datadog_api_key
+  datadog_region  = var.datadog_region
+
   tags = local.resource_tags
 }
 

@@ -13,6 +13,58 @@ resource "aws_ecs_task_definition" "nginx" {
 
   container_definitions = jsonencode([
     {
+      name      = "datadog-agent"
+      image     = "public.ecr.aws/datadog/agent:latest"
+      essential = true
+
+      environment = [
+        {
+          name  = "DD_SITE"
+          value = var.datadog_region
+        },
+        {
+          name  = "DD_APM_ENABLED"
+          value = "true"
+        },
+        {
+          name  = "DD_APM_NON_LOCAL_TRAFFIC"
+          value = "true"
+        },
+        {
+          name  = "DD_LOGS_ENABLED"
+          value = "true"
+        },
+        {
+          name  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL"
+          value = "true"
+        },
+        {
+          name  = "DD_CONTAINER_EXCLUDE"
+          value = "name:datadog-agent"
+        },
+        {
+          name  = "ECS_FARGATE"
+          value = "true"
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "DD_API_KEY"
+          valueFrom = data.aws_secretsmanager_secret.datadog_api_key.arn
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.nginx.name
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = "datadog-agent"
+        }
+      }
+    },
+    {
       name      = "nginx"
       image     = "nginx:latest"
       essential = true
@@ -32,6 +84,13 @@ resource "aws_ecs_task_definition" "nginx" {
           awslogs-stream-prefix = "nginx"
         }
       }
+
+      dependsOn = [
+        {
+          containerName = "datadog-agent"
+          condition     = "START"
+        }
+      ]
     }
   ])
 

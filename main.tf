@@ -40,4 +40,49 @@ module "ecs" {
   project_name              = var.project_name
 
   tags = local.resource_tags
+}
+
+module "nginx_service" {
+  source = "./modules/nginx-service"
+
+  project_name    = var.project_name
+  environment     = var.environment
+  cluster_id      = module.ecs.cluster_id
+  vpc_id          = data.aws_vpc.default.id
+  private_subnets = data.aws_subnets.default.ids
+  public_subnets  = data.aws_subnets.public.ids
+
+  # Optional configurations
+  container_port = 80
+  cpu           = 256
+  memory        = 512
+  desired_count = 2
+
+  tags = local.resource_tags
+}
+
+# Get default VPC
+data "aws_vpc" "default" {
+  default = true
+}
+
+# Get default subnets
+data "aws_subnets" "default" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+}
+
+# Get public subnets
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
 } 

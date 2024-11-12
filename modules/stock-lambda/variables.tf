@@ -35,4 +35,10 @@ variable "lambda_memory_size" {
 variable "api_key_secret_name" {
   description = "Name of the existing secret in AWS Secrets Manager that stores the API key"
   type        = string
+}
+
+variable "function_version" {
+  description = "Version of the Lambda function for Datadog tracking"
+  type        = string
+  default     = "1.0.0"
 } 

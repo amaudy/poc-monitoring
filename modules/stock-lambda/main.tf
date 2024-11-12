@@ -9,6 +9,15 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/stock_lambda.zip"
 }
 
+# Add this data source to get the Datadog API key
+data "aws_secretsmanager_secret" "datadog_api_key" {
+  name = "poc_datadog/datadog/api_key"
+}
+
+data "aws_secretsmanager_secret_version" "datadog_api_key" {
+  secret_id = data.aws_secretsmanager_secret.datadog_api_key.id
+}
+
 # Lambda function
 resource "aws_lambda_function" "stock_info" {
   filename         = data.archive_file.lambda_zip.output_path
@@ -16,15 +25,28 @@ resource "aws_lambda_function" "stock_info" {
   function_name    = local.lambda_name
   role             = aws_iam_role.lambda_role.arn
   handler          = "main.handler"
-  runtime          = "python3.12"
+  runtime          = "python3.9"
   timeout          = var.lambda_timeout
   memory_size      = var.lambda_memory_size
 
   environment {
     variables = {
       ENVIRONMENT = var.environment
+      DD_LAMBDA_HANDLER = "main.handler"
+      DD_TRACE_ENABLED = "true"
+      DD_MERGE_XRAY_TRACES = "true"
+      DD_SERVICE = local.lambda_name
+      DD_ENV = var.environment
+      DD_VERSION = var.function_version
+      DD_API_KEY = data.aws_secretsmanager_secret_version.datadog_api_key.secret_string
+      DD_LOG_LEVEL = "debug"
+      DD_TRACE_DEBUG = "true"
     }
   }
+
+  layers = [
+    "arn:aws:lambda:${data.aws_region.current.name}:464622532012:layer:Datadog-Python39:58" # Datadog Lambda Layer
+  ]
 
   tags = var.tags
 }

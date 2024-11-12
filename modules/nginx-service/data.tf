@@ -26,7 +26,7 @@ data "aws_subnets" "public" {
 
 # Update the secret name to match your actual secret name
 data "aws_secretsmanager_secret" "datadog_api_key" {
-  name = "poc_datadog/datadog/api_key"  # Updated to match your actual secret name
+  name = "poc_datadog/datadog/api_key" # Updated to match your actual secret name
 }
 
 data "aws_secretsmanager_secret_version" "datadog_api_key" {

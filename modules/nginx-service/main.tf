@@ -6,10 +6,10 @@ locals {
 resource "aws_ecs_task_definition" "nginx" {
   family                   = "${local.name_prefix}-nginx"
   requires_compatibilities = ["FARGATE"]
-  network_mode            = "awsvpc"
-  cpu                     = var.cpu
-  memory                  = var.memory
-  execution_role_arn      = aws_iam_role.ecs_task_execution.arn
+  network_mode             = "awsvpc"
+  cpu                      = var.cpu
+  memory                   = var.memory
+  execution_role_arn       = aws_iam_role.ecs_task_execution.arn
 
   container_definitions = jsonencode([
     {
@@ -104,7 +104,7 @@ resource "aws_ecs_task_definition" "nginx" {
       dockerLabels = {
         "com.datadoghq.ad.logs" = "[{\"source\": \"nginx\", \"service\": \"nginx\", \"version\": \"${var.service_version}\"}]"
         "service"               = "nginx"
-        "version"              = var.service_version
+        "version"               = var.service_version
       }
 
       portMappings = [
@@ -170,7 +170,7 @@ resource "aws_lb" "nginx" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
-  subnets           = var.public_subnets
+  subnets            = var.public_subnets
 
   tags = merge(var.tags, {
     Version = var.service_version

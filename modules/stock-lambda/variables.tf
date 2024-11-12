@@ -33,12 +33,30 @@ variable "lambda_memory_size" {
 }
 
 variable "api_key_secret_name" {
-  description = "Name of the existing secret in AWS Secrets Manager that stores the API key"
+  description = "Name of the existing secret in AWS Secrets Manager that stores the API Gateway API key"
   type        = string
+}
+
+variable "datadog_api_key_secret_name" {
+  description = "Name of the existing secret in AWS Secrets Manager that stores the Datadog API key"
+  type        = string
+  default     = "poc_datadog/datadog/api_key"
 }
 
 variable "function_version" {
   description = "Version of the Lambda function for Datadog tracking"
   type        = string
   default     = "1.0.0"
+}
+
+variable "datadog_forwarder_name" {
+  description = "Name of the Datadog forwarder Lambda function"
+  type        = string
+  default     = "datadog-forwarder"
+}
+
+variable "enable_datadog_forwarder" {
+  description = "Whether to enable Datadog forwarder integration"
+  type        = bool
+  default     = false
 } 

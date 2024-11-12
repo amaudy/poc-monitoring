@@ -9,15 +9,6 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/stock_lambda.zip"
 }
 
-# Add this data source to get the Datadog API key
-data "aws_secretsmanager_secret" "datadog_api_key" {
-  name = "poc_datadog/datadog/api_key"
-}
-
-data "aws_secretsmanager_secret_version" "datadog_api_key" {
-  secret_id = data.aws_secretsmanager_secret.datadog_api_key.id
-}
-
 # Lambda function
 resource "aws_lambda_function" "stock_info" {
   filename         = data.archive_file.lambda_zip.output_path
@@ -45,7 +36,7 @@ resource "aws_lambda_function" "stock_info" {
   }
 
   layers = [
-    "arn:aws:lambda:${data.aws_region.current.name}:464622532012:layer:Datadog-Python39:58" # Datadog Lambda Layer
+    "arn:aws:lambda:${data.aws_region.current.name}:464622532012:layer:Datadog-Python39:58"
   ]
 
   tags = var.tags
@@ -225,10 +216,21 @@ resource "aws_api_gateway_account" "main" {
   cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch.arn
 }
 
-# Add subscription filter to forward logs to Datadog
+# Make the subscription filter conditional
 resource "aws_cloudwatch_log_subscription_filter" "api_gateway_logs_to_datadog" {
+  count           = var.enable_datadog_forwarder ? 1 : 0
   name            = "${local.lambda_name}-api-logs-filter"
   log_group_name  = aws_cloudwatch_log_group.api_logs.name
-  filter_pattern  = ""  # Empty pattern to capture all logs
-  destination_arn = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:datadog-forwarder"
+  filter_pattern  = ""
+  destination_arn = data.aws_lambda_function.datadog_forwarder[0].arn
+}
+
+# Make the Lambda permission conditional
+resource "aws_lambda_permission" "cloudwatch_logs_datadog" {
+  count         = var.enable_datadog_forwarder ? 1 : 0
+  statement_id  = "${local.lambda_name}-AllowCloudWatchLogsInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = data.aws_lambda_function.datadog_forwarder[0].function_name
+  principal     = "logs.${data.aws_region.current.name}.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_log_group.api_logs.arn}:*"
 }

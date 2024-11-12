@@ -7,7 +7,7 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 
 # CloudWatch Log Group for API Gateway
 resource "aws_cloudwatch_log_group" "api_logs" {
-  name              = "/aws/poc-datadog/apigateway/${local.lambda_name}"
+  name              = "/aws/poc-datadog/api-gateway/${local.lambda_name}"
   retention_in_days = 1
   tags              = var.tags
 } 

@@ -8,4 +8,7 @@ data "aws_secretsmanager_secret_version" "api_key" {
 }
 
 # Get current region
-data "aws_region" "current" {} 
+data "aws_region" "current" {}
+
+# Add this to get the AWS account ID
+data "aws_caller_identity" "current" {} 

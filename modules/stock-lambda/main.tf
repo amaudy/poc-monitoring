@@ -132,6 +132,12 @@ resource "aws_api_gateway_stage" "stock_api" {
       protocol       = "$context.protocol"
       responseLength = "$context.responseLength"
       responseTime   = "$context.responseLatency"
+      # Datadog specific fields
+      dd = {
+        service = "api-gateway"
+        env     = var.environment
+        tags    = ["service:api-gateway", "resource:/stock"]
+      }
     })
   }
 
@@ -217,4 +223,12 @@ resource "aws_iam_role_policy" "api_gateway_cloudwatch" {
 # API Gateway account settings
 resource "aws_api_gateway_account" "main" {
   cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch.arn
+}
+
+# Add subscription filter to forward logs to Datadog
+resource "aws_cloudwatch_log_subscription_filter" "api_gateway_logs_to_datadog" {
+  name            = "${local.lambda_name}-api-logs-filter"
+  log_group_name  = aws_cloudwatch_log_group.api_logs.name
+  filter_pattern  = ""  # Empty pattern to capture all logs
+  destination_arn = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:datadog-forwarder"
 }

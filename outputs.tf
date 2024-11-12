@@ -26,4 +26,15 @@ output "nginx_alb_dns_name" {
 output "nginx_service_name" {
   description = "Name of the Nginx ECS service"
   value       = module.nginx_service.service_name
+}
+
+output "stock_api_endpoint" {
+  description = "Stock API endpoint URL"
+  value       = module.stock_lambda.api_endpoint
+}
+
+output "stock_api_key" {
+  description = "Stock API Key"
+  value       = module.stock_lambda.api_key
+  sensitive   = true
 } 

@@ -66,6 +66,17 @@ module "nginx_service" {
   tags = local.resource_tags
 }
 
+module "stock_lambda" {
+  source = "./modules/stock-lambda"
+
+  project_name        = var.project_name
+  environment         = var.environment
+  api_key_required    = true
+  api_key_secret_name = "poc_datadog/api_gateway/api_key" # Updated secret name
+
+  tags = local.resource_tags
+}
+
 # Get default VPC
 data "aws_vpc" "default" {
   default = true
